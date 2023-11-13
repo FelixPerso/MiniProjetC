@@ -1,184 +1,247 @@
-#include <cstdio>
-#include <cstring>
-#include <cppconn/driver.h>
-#include <cppconn/connection.h>
-#include <cppconn/exception.h>
-#include <cppconn/statement.h>
-#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
 
-#define MAX_STRING_LENGTH 40
+#define MAX_TAILLE 40
 
-struct Person {
-    char nom[MAX_STRING_LENGTH];
-    char prenom[MAX_STRING_LENGTH];
-    char telephone[MAX_STRING_LENGTH];
-    char email[MAX_STRING_LENGTH];
-};
+typedef enum {
+    NOM = 1,
+    PRENOM = 2,
+    TELEPHONE = 3,
+    MAIL = 4
+}CHOIX ;
 
-sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
-sql::Connection *conn;
+const char* listeChoix = {"nom", "prénom", "telephone", "mail"};
+
+typedef struct  {
+    char nom[MAX_TAILLE];
+    char prenom[MAX_TAILLE];
+    char numero_telephone[MAX_TAILLE];
+    char adresse_mail[MAX_TAILLE];
+}Personne;
+
+void Afficher_Personne(Personne personne){
+    printf("Nom : %s\n", personne.nom);
+    printf("Prenom : %s\n", personne.prenom);
+    printf("Telephone : %s\n", personne.numero_telephone);
+    printf("Mail : %s\n", personne.adresse_mail);
+    printf("------------------\n\n");
+}
+
+CHOIX get_choix(){
+    int choix_recherche;
+    do {
+        printf("Les choix disponibles sont : \n"
+               "* Nom (1)\n"
+               "* Prénom (2)\n"
+               "* Téléphone (3)\n"
+               "* Mail (4)\n\n");
+
+        printf("Votre choix :");
+
+        scanf("%d", &choix_recherche);
+
+        if (choix_recherche <= 0 || choix_recherche > 4){
+            printf("WELSH-POWELL TU SAIS PAS CHOISIR ENTRE 1 ET 4\n\n");
+            choix_recherche = 0;
+        }
+
+    } while(!choix_recherche);
+
+    return choix_recherche;
+}
+
 
 void Creer_Enregistrement() {
-    struct Person personne;
-    printf("Nom : ");
+    FILE *file;
+    Personne personne;
+
+    file = fopen("repertoire.txt", "a");
+
+    if (file == NULL) {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
+        exit(1);
+    }
+
+    printf("Nom :");
     scanf("%s", personne.nom);
-    printf("Prénom : ");
+
+    printf("Prenom :");
     scanf("%s", personne.prenom);
-    printf("Téléphone : ");
-    scanf("%s", personne.telephone);
-    printf("Email : ");
-    scanf("%s", personne.email);
 
-    try {
-        sql::Statement *stmt = conn->createStatement();
-        char query[256];
-        snprintf(query, sizeof(query), "INSERT INTO Personne (Nom, Prenom, Telephone, Email) VALUES ('%s', '%s', '%s', '%s')",
-                 personne.nom, personne.prenom, personne.telephone, personne.email);
-        stmt->execute(query);
-        delete stmt;
-        printf("Enregistrement ajouté avec succès.\n");
-    } catch (sql::SQLException &e) {
-        std::cerr << "Erreur MySQL : " << e.what() << std::endl;
-    }
+    printf("Numero de telephone :");
+    scanf("%s", personne.numero_telephone);
+
+    printf("Adresse mail :");
+    scanf("%s", personne.adresse_mail);
+
+    fprintf(file, "\n%s;%s;%s;%s", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail);
+
+    fclose(file);
+
+    printf("\nLa personne a été ajouté avec succès.\n");
 }
 
-void Affiche_Repertoire() {
-    try {
-        sql::Statement *stmt = conn->createStatement();
-        sql::ResultSet *result = stmt->executeQuery("SELECT * FROM Personne");
+void Affiche_Repertoire(){
+    FILE *file;
 
-        if (result == NULL) {
-            printf("Aucune personnes présentes en base de données");
-            return;
-        }
+    Personne personne;
+    file = fopen("repertoire.txt", "r");
 
-        printf("Répertoire des personnes :\n");
-        while (result->next()) {
-            printf("Nom : %s\n", result->getString("Nom").c_str());
-            printf("Prénom : %s\n", result->getString("Prenom").c_str());
-            printf("Téléphone : %s\n", result->getString("Telephone").c_str());
-            printf("Email : %s\n", result->getString("Email").c_str());
-            printf("-----------\n");
-        }
-
-        delete result;
-        delete stmt;
-    } catch (sql::SQLException &e) {
-        std::cerr << "Erreur MySQL : " << e.what() << std::endl;
+    if (file == NULL) {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
+        exit(1);
     }
+
+    printf("\nVoici le répertoire :\n\n");
+
+    while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail) == 4){
+        Afficher_Personne(personne);
+    }
+
+    fclose(file);
 }
 
-void Recherche() {
-    char nomRecherche[MAX_STRING_LENGTH];
-    printf("Entrez le nom de la personne que vous recherchez : ");
-    scanf("%s", nomRecherche);
+void Recherche(){
+    FILE *file;
+    Personne personne;
+    bool personneTrouve = false;
+    char champs_recherche[MAX_TAILLE];
 
-    try {
-        sql::Statement *stmt = conn->createStatement();
-        char query[256];
-        snprintf(query, sizeof(query), "SELECT * FROM Personne WHERE Nom = '%s'", nomRecherche);
+    file = fopen("repertoire.txt", "r");
 
-        sql::ResultSet *result = stmt->executeQuery(query);
-
-        if (result == NULL) {
-            printf("La personne avec le nom %s n'existe pas dans la base de données", nomRecherche);
-            return;
-        }
-
-        printf("Personne trouvée :\n");
-        while (result->next()) {
-            printf("Nom : %s\n", result->getString("Nom").c_str());
-            printf("Prénom : %s\n", result->getString("Prenom").c_str());
-            printf("Téléphone : %s\n", result->getString("Telephone").c_str());
-            printf("Email : %s\n", result->getString("Email").c_str());
-            printf("\n");
-        }
-
-        delete result;
-        delete stmt;
-    } catch (sql::SQLException &e) {
-        std::cerr << "Erreur MySQL : " << e.what() << std::endl;
+    if (file == NULL) {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
+        exit(1);
     }
+
+    printf("Entrez le champs de la personne à rechercher :\n\n");
+    CHOIX choix_recherche = get_choix();
+
+    printf("\nEntrez le %s recherché :", );
+
+    scanf("%s", champs_recherche);
+
+    printf("\n");
+
+    while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail) == 4){
+
+
+
+    }
+
+    if (!personneTrouve)
+        printf("La personne recherché par %s avec la valeur %s n'existe pas ", choix_recherche, champs_recherche);
+
+    fclose(file);
 }
 
-void Supprimer() {
-    char nomSupprimer[MAX_STRING_LENGTH];
-    printf("Entrez le nom de la personne à supprimer : ");
-    scanf("%s", nomSupprimer);
 
-    try {
-        sql::Statement *stmt = conn->createStatement();
-        char query[256];
-        snprintf(query, sizeof(query), "DELETE FROM Personne WHERE Nom = '%s'", nomSupprimer);
 
-        int rowsAffected = stmt->executeUpdate(query);
+void Supprimer(){
+    FILE *file, *tmpFile;
+    Personne personne;
+    char champs_recherche[MAX_TAILLE];
+    bool personneTrouve = false;
+    const char* tab[] = {"nom", "prénom", "téléphone", "mail"};
 
-        if (rowsAffected > 0) {
-            printf("Personne supprimée avec succès.\n");
-        } else {
-            printf("Aucune personne trouvée avec ce nom. Suppression impossible.\n");
-        }
+    file = fopen("repertoire.txt", "r");
 
-        delete stmt;
-    } catch (sql::SQLException &e) {
-        std::cerr << "Erreur MySQL : " << e.what() << std::endl;
+    if (file == NULL) {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
+        exit(1);
     }
+
+    tmpFile = fopen("temp.txt", "w");
+
+    if (tmpFile == NULL) {
+        fprintf(stderr, "Erreur lors de l'ouverture du fichier temp.txt\n\n");
+        exit(1);
+    }
+
+    printf("Entrez le champs de la personne à supprimer :\n\n");
+    int choix_recherche = get_choix();
+
+    printf("\nEntrez le %s à supprimer: ", tab[choix_recherche-1]);
+
+    scanf("%s", champs_recherche);
+
+    printf("\n");
+
+    while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail) == 4) {
+        if (strcmp("nom", tab[choix_recherche-1]) == 0)
+            if (strcmp(personne.nom, champs_recherche) != 0) {
+                fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail);
+                personneTrouve = true;
+            }
+
+        if (strcmp("prénom", tab[choix_recherche-1]) == 0)
+            if (strcmp(personne.prenom, champs_recherche) != 0) {
+                fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail);
+                personneTrouve = true;
+            }
+
+        if (strcmp("téléphone", tab[choix_recherche-1]) == 0)
+            if (strcmp(personne.numero_telephone, champs_recherche) != 0) {
+                fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail);
+                personneTrouve = true;
+            }
+
+        if (strcmp("mail", tab[choix_recherche-1]) == 0)
+            if (strcmp(personne.adresse_mail, champs_recherche) != 0) {
+                fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail);
+                personneTrouve = true;
+            }
+
+    }
+
+    if (!personneTrouve)
+        printf("La personne recherché par %s avec la valeur %s n'existe pas\n\n", tab[choix_recherche-1], champs_recherche);
+    else
+        printf("La personne a été supprimé avec succès !\n\n");
+
+
+    fclose(file);
+    fclose(tmpFile);
+
+    remove("repertoire.txt");
+    rename("temp.txt", "repertoire.txt");
+
 }
+
 
 int main() {
-    try {
-        conn = driver->connect("tcp://localhost:3306", "Copium", "Copium");
-        conn->setSchema("PROJET_C");
+    int fonctionnalite;
 
-        while (true) {
-            int fonctionnalite;
+    while (1) {
+        printf("Que voulez-vous faire :\n");
+        printf("* Ajouter une personne (1)\n");
+        printf("* Afficher le repertoire (2)\n");
+        printf("* Réaliser une recherche (3)\n");
+        printf("* Supprimer une personne (4)\n");
+        printf("* Quitter (5)\n");
 
-            printf("Que voulez-vous faire :\n");
-            printf("* Ajouter une personne (1)\n");
-            printf("* Afficher le répertoire (2)\n");
-            printf("* Réaliser une recherche par nom (3)\n");
-            printf("* Supprimer une personne par nom (4)\n");
-            printf("* Quitter (5)\n");
+        printf("\nVotre choix :");
 
-            scanf("%d", &fonctionnalite);
+        scanf("%d", &fonctionnalite);
 
-            if (fonctionnalite == 1) Creer_Enregistrement();
-            if (fonctionnalite == 2) Affiche_Repertoire();
-            if (fonctionnalite == 3) Recherche();
-            if (fonctionnalite == 4) Supprimer();
-            if (fonctionnalite == 5) break;
+        printf("\n");
 
-            printf("\n");
-        }
-    } catch (sql::SQLException &e) {
-        std::cerr << "Erreur MySQL : " << e.what() << std::endl;
-    }
+        if (fonctionnalite == 1)
+            Creer_Enregistrement();
+        if (fonctionnalite == 2)
+            Affiche_Repertoire();
+        if (fonctionnalite == 3)
+            Recherche();
+        if (fonctionnalite == 4)
+            Supprimer();
+        if (fonctionnalite == 5)
+            break;
 
-    if (conn) {
-        conn->close();
-        delete conn;
+        printf("\n");
     }
 
     printf("Terminé...\n");
     return 0;
 }
-
-/*
- * CREATE DATABASE IF NOT EXISTS PROJET_C;
-
-USE APTN61_BD;
-
-CREATE USER IF NOT EXISTS 'copium'@'localhost' IDENTIFIED BY 'copium';
-GRANT ALL ON *.* TO 'copium'@'localhost';
-FLUSH PRIVILEGES;
-
-DROP TABLE IF EXISTS Personne;
-
-CREATE TABLE IF NOT EXISTS Personne
-(
-    Id          INT PRIMARY KEY AUTO_INCREMENT,
-    Nom 		VARCHAR(40),
-    Prenom		VARCHAR(40),
-    email		VARCHAR(40)
-);
- */

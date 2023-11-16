@@ -21,4 +21,4 @@ Il vous faut également un compiler pour le langage C :
 + Cliquez sur File > Open Folder (`Ctrl+K Crtl+O`).
 + Sélectionner le répertoire extrait sur votre bureau.
 + Si demander, cliquez sur `Yes I trust the authors`.
-+ Lancer application > __main.c__ se trouvant dans le dossier __
++ Lancer application > __main.c__ se trouvant dans le dossier application

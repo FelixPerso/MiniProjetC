@@ -1,5 +1,7 @@
 #include "actions.h"
 
+const char* personne_attributes[] = {"Nom", "Prénom", "Téléphone", "Mail"};
+
 void createPerson() {
     FILE *file;
     Person personne;
@@ -63,7 +65,7 @@ void displayAll(){
     fclose(file);
 }
 
-void Recherche(){
+void research(){
     FILE *file;
     Person personne;
     int nb_personnes = 0;
@@ -135,7 +137,7 @@ void Recherche(){
     fclose(file);
 }
 
-void Supprimer(){
+void delete(){
     FILE *file, *tmpFile;
     Person personne;
     char champs_recherche[MAX_TAILLE];

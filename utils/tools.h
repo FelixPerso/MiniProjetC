@@ -1,8 +1,3 @@
-#ifndef MINI_PROJET_C_TOOLS_H
-#define MINI_PROJET_C_TOOLS_H
-
-#endif //MINI_PROJET_C_TOOLS_H
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>

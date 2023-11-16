@@ -1,3 +1,0 @@
-Alonso;Cédric;0695858223;cedric.alonso@efrei.net
-Brinet;Félix;0606060607;felix.brinet@efrei.net
-Hatoum;Jade;0669696969;jade.hatoum@efrei.net

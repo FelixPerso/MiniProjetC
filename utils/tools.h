@@ -16,7 +16,7 @@ typedef enum {
     PRENOM = 2,
     TELEPHONE = 3,
     MAIL = 4
-}CHOIX ;
+}Choice ;
 
 typedef struct{
     int integer; //returns -1 when error
@@ -28,8 +28,9 @@ typedef struct  {
     char prenom[MAX_TAILLE];
     char numero_telephone[MAX_TAILLE];
     char adresse_mail[MAX_TAILLE];
-}Personne;
+}Person;
 
 Output intVerify(int min, int max, char input[]);
-CHOIX get_choix(const char* choices[], int size);
-void add_personne(Personne* liste_personnes, Personne new_personne, int* nb_personnes);
+Choice getChoice(const char* choices[], int size);
+void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes);
+void displayPerson(Person personne);

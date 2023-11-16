@@ -1,8 +1,3 @@
-a;b;c;d
 Alonso;Cédric;0695858223;cedric.alonso@efrei.net
 Brinet;Félix;0606060607;felix.brinet@efrei.net
 Hatoum;Jade;0669696969;jade.hatoum@efrei.net
-a;z;z;z
-a;w;w;w
-nom;prenom;tel;mail
-nom1;prenom1;tel1;mail1

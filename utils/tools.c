@@ -5,7 +5,7 @@ Output intVerify(int min, int max, char input[]){
     char tmpChar;
 
     if(index == 0){
-        Output output = {-1, "Ecrivez quelque chose!\n"};
+        Output output = {-1, "Écrivez quelque chose!\n"};
         return output;
     }
 
@@ -36,7 +36,7 @@ Output intVerify(int min, int max, char input[]){
     }
 }
 
-CHOIX get_choix(const char* choices[], int size){
+Choice getChoice(const char* choices[], int size){
     int choix_recherche;
     char input[MAX_TAILLE];
     Output output;
@@ -66,8 +66,15 @@ CHOIX get_choix(const char* choices[], int size){
     return choix_recherche;
 }
 
-void add_personne(Personne* liste_personnes, Personne new_personne, int* nb_personnes){
+void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes){
     (*nb_personnes)++;
-    liste_personnes = realloc(liste_personnes, (*nb_personnes) * sizeof(Personne));
+    liste_personnes = realloc(liste_personnes, (*nb_personnes) * sizeof(Person));
     liste_personnes[(*nb_personnes)-1] = new_personne;
+}
+
+void displayPerson(Person personne){
+    printf("Nom : %s\n", personne.nom);
+    printf("Prénom : %s\n", personne.prenom);
+    printf("Téléphone : %s\n", personne.numero_telephone);
+    printf("Mail : %s\n", personne.adresse_mail);
 }

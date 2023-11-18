@@ -9,8 +9,8 @@ void createPerson() {
     file = fopen("repertoire.txt", "a");
 
     if (file == NULL) {
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
-        exit(1);
+        displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
+        file = fopen("repertoire.txt", "w");
     }
 
     printf("Nom :");
@@ -40,13 +40,12 @@ void displayAll(){
     file = fopen("repertoire.txt", "r");
 
     if (file == NULL) {
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
-        exit(1);
+        displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
+        fopen("repertoire.txt", "w");
+        return;
     }
 
     Person *personnes = malloc(sizeof(Person));
-
-    printf("\nVoici le répertoire :\n\n");
 
     while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
                  personne.numero_telephone, personne.adresse_mail) == 4){
@@ -54,13 +53,21 @@ void displayAll(){
     }
 
     if(nb_personnes > 0) {
+        c_textcolor(WHITE);
+        printf("\nVoici le répertoire :\n");
+
         for (int i = 0; i < nb_personnes; i++) {
-            printf("---------------------------\n");
+            if(i%2 == 0)
+                c_textbackground(LIGHTGRAY);
+            else
+                c_textbackground(DARKGRAY);
+            c_textcolor(BLACK);
             displayPerson(personnes[i]);
+            c_textbackground(BLACK);
         }
-        printf("---------------------------\n");
+        c_textcolor(LIGHTGRAY);
     }else
-        printf("Aucune personne n'a été trouvé :/\n");
+        displayError("Aucune personne n'a été trouvé :/\n");
 
     fclose(file);
 }
@@ -71,21 +78,29 @@ void research(){
     int nb_personnes = 0;
     bool personneTrouve;
     char champs_recherche[MAX_TAILLE];
+    Choice choix_recherche;
 
     file = fopen("repertoire.txt", "r");
 
     if (file == NULL) {
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier repertoire.txt\n\n");
-        exit(1);
+        displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
+        fopen("repertoire.txt", "w");
+        return;
     }
 
-    printf("Entrez le champs de la personne à rechercher :");
-    Choice choix_recherche = getChoice(personne_attributes, 4);
+    choix_recherche = getChoice(personne_attributes, 4, "Entrez le champs de la personne à rechercher :\n");
 
-    printf("Entrez le %s recherché :", personne_attributes[choix_recherche-1]);
+    do {
+        printf("Entrez le %s recherché (%d char max) : ", personne_attributes[choix_recherche-1], MAX_TAILLE);
 
-    scanf("%s", champs_recherche);
-    printf("\n");
+        fgets(champs_recherche, MAX_TAILLE, stdin);
+        printf("\n");
+
+        if (champs_recherche[0] == '\n')
+            displayError("Veuillez écrire quelque chose!\n");
+    }while(champs_recherche[0] == '\n');
+
+    champs_recherche[strlen(champs_recherche)-1] = '\0';
 
     Person* personnes = malloc(sizeof(Person));
 
@@ -122,17 +137,26 @@ void research(){
     }
 
     if (nb_personnes > 0) {
+        c_textcolor(WHITE);
         printf(nb_personnes>1?"%d Personnes trouvées :\n\n":"Une personne trouvée :\n\n", nb_personnes);
 
         for (int i = 0; i < nb_personnes; i++) {
-            printf("---------------------------\n");
+            if(i%2 == 0)
+                c_textbackground(LIGHTGRAY);
+            else
+                c_textbackground(DARKGRAY);
+            c_textcolor(BLACK);
             displayPerson(personnes[i]);
+            c_textbackground(BLACK);
         }
-        printf("---------------------------\n\n");
+        c_textcolor(LIGHTGRAY);
 
-    } else
-        printf("Aucune personne avec le %s '%s' existe :/\n", personne_attributes[choix_recherche-1],
-               champs_recherche);
+    } else {
+        char message[1000];
+        snprintf(message, sizeof(message), "Aucune personne avec le %s '%s' existe :/\n",
+                 personne_attributes[choix_recherche-1], champs_recherche);
+        displayError(message);
+    }
 
     fclose(file);
 }
@@ -141,71 +165,76 @@ void delete(){
     FILE *file, *tmpFile;
     Person personne;
     char champs_recherche[MAX_TAILLE];
-    bool personneTrouve;
     int cpt = 0;
 
     file = fopen("repertoire.txt", "r");
 
     if (file == NULL) {
-        fprintf(stderr, "Fichier repertoire.txt introuvable...\n\n");
-        exit(1);
+        displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
+        fopen("repertoire.txt", "w");
+        return;
     }
+
+    fseek(file, 0, SEEK_END);
+    if (ftell(file) == 0) {
+        displayError("Le répertoire est vide :/\n\n");
+        return;
+    }
+    fseek(file, 0, SEEK_SET);
 
     tmpFile = fopen("temp.txt", "w");
 
-    if (tmpFile == NULL) {
-        fprintf(stderr, "Erreur lors de l'ouverture du fichier temp.txt\n\n");
-        exit(1);
-    }
+    Choice choix_recherche = getChoice(personne_attributes, 4, "Entrez le champs de la personne à supprimer :\n");
 
-    printf("Entrez le champs de la personne à supprimer :\n\n");
-    Choice choix_recherche = getChoice(personne_attributes, 4);
+    do {
+        printf("Entrez le %s recherché (%d char max) : ", personne_attributes[choix_recherche-1], MAX_TAILLE);
 
-    printf("\nEntrez le %s de(s) personne(s) à supprimer: ", personne_attributes[choix_recherche-1]);
+        fgets(champs_recherche, MAX_TAILLE, stdin);
+        printf("\n");
 
-    scanf("%s", champs_recherche);
-    printf("\n");
+        if (champs_recherche[0] == '\n')
+            displayError("Veuillez écrire quelque chose!\n");
+    }while(champs_recherche[0] == '\n');
+
+    champs_recherche[strlen(champs_recherche)-1] = '\0';
 
     while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
                  personne.numero_telephone, personne.adresse_mail) == 4) {
-        personneTrouve = false;
-
         switch (choix_recherche) {
             case 1:
                 if (strcmp(personne.nom, champs_recherche) != 0) {
                     fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom,
                             personne.numero_telephone, personne.adresse_mail);
-                    personneTrouve = true;
                 }else cpt++;
                 break;
             case 2:
                 if (strcmp(personne.prenom, champs_recherche) != 0) {
                     fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom,
                             personne.numero_telephone, personne.adresse_mail);
-                    personneTrouve = true;
                 }else cpt++;
                 break;
             case 3:
                 if (strcmp(personne.numero_telephone, champs_recherche) != 0) {
                     fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom,
                             personne.numero_telephone, personne.adresse_mail);
-                    personneTrouve = true;
                 }else cpt++;
                 break;
             case 4:
                 if (strcmp(personne.adresse_mail, champs_recherche) != 0) {
                     fprintf(tmpFile, "%s;%s;%s;%s\n", personne.nom, personne.prenom,
                             personne.numero_telephone, personne.adresse_mail);
-                    personneTrouve = true;
                 }else cpt++;
                 break;
         }
     }
 
-    if (cpt == 0)
-        printf("La personne recherché par %s avec la valeur %s n'existe pas\n\n",
-               personne_attributes[choix_recherche-1], champs_recherche);
-    else
+    if (cpt == 0) {
+        char message[1000];
+        snprintf(message, sizeof(message), "Aucune personne avec le %s '%s' existe :/\n",
+                 personne_attributes[choix_recherche-1], champs_recherche);
+        displayError(message);
+
+    }else
         printf(cpt>1?"%d Personnes ont été supprimées!\n\n":"Une personne a été supprimée!\n\n", cpt);
 
     fclose(file);

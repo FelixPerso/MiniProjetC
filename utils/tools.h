@@ -26,6 +26,8 @@ typedef struct  {
 }Person;
 
 Output intVerify(int min, int max, char input[]);
-Choice getChoice(const char* choices[], int size);
+Choice getChoice(const char* choices[], int size, char* title);
+void displayError(char* message);
+
 void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes);
 void displayPerson(Person personne);

@@ -36,22 +36,24 @@ Output intVerify(int min, int max, char input[]){
     }
 }
 
-Choice getChoice(const char* choices[], int size){
+Choice getChoice(const char* choices[], int size, char* title){
     int choix_recherche;
     char input[MAX_TAILLE];
     Output output;
     output.message = "";
 
     do {
-        printf("Les choix disponibles sont : \n");
+        c_textbackground(WHITE);
+        c_textcolor(BLACK);
+        printf("%s", title);
+        c_textcolor(LIGHTGRAY);
+        c_textbackground(BLACK);
         for(int i=0; i<size; i++)
             printf("%d - %s\n", i+1, choices[i]);
 
-        c_textcolor(RED);
-        printf("\n%s",output.message);
-        c_textcolor(LIGHTGRAY);
+        displayError(output.message);
 
-        printf("Votre choix :");
+        printf(">>>");
 
         fflush(stdin);
         gets(input);
@@ -73,8 +75,14 @@ void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes){
 }
 
 void displayPerson(Person personne){
-    printf("Nom : %s\n", personne.nom);
-    printf("Prénom : %s\n", personne.prenom);
-    printf("Téléphone : %s\n", personne.numero_telephone);
-    printf("Mail : %s\n", personne.adresse_mail);
+    printf(" Nom       : %s                 \n", personne.nom);
+    printf(" Prénom    : %s                 \n", personne.prenom);
+    printf(" Téléphone : %s                 \n", personne.numero_telephone);
+    printf(" Mail      : %s                 \n", personne.adresse_mail);
+}
+
+void displayError(char* message){
+    c_textcolor(RED);
+    printf("\n%s", message);
+    c_textcolor(LIGHTGRAY);
 }

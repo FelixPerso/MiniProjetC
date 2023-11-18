@@ -10,20 +10,28 @@ const char* menu_options[] = {"Ajouter une personne",
 int main() {
     SetConsoleOutputCP(CP_UTF8);
     int fonctionnalite;
+    bool run = true;
 
-    while (true) {
-        fonctionnalite = getChoice(menu_options, 5);
+    while (run) {
+        fonctionnalite = getChoice(menu_options, 5, " -=+=- MENU PRINCIPAL -=+=- \n");
 
-        if (fonctionnalite == 1)
-            createPerson();
-        if (fonctionnalite == 2)
-            displayAll();
-        if (fonctionnalite == 3)
-            research();
-        if (fonctionnalite == 4)
-            delete();
-        if (fonctionnalite == 5)
-            break;
+        switch(fonctionnalite) {
+            case 1:
+                createPerson();
+                break;
+            case 2:
+                displayAll();
+                break;
+            case 3:
+                research();
+                break;
+            case 4:
+                delete();
+                break;
+            case 5:
+                run = false;
+                break;
+        }
 
         printf("\n");
     }

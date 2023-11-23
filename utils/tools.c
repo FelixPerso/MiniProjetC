@@ -75,10 +75,10 @@ void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes){
 }
 
 void displayPerson(Person personne){
-    printf(" Nom       : %s                 \n", personne.nom);
-    printf(" Prénom    : %s                 \n", personne.prenom);
-    printf(" Téléphone : %s                 \n", personne.numero_telephone);
-    printf(" Mail      : %s                 \n", personne.adresse_mail);
+    printf(" Nom       : %s\t\n", personne.nom);
+    printf(" Prénom    : %s\t\n", personne.prenom);
+    printf(" Téléphone : %s\t\n", personne.numero_telephone);
+    printf(" Mail      : %s\t\n", personne.adresse_mail);
 }
 
 void displayError(char* message){

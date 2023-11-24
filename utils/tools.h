@@ -30,6 +30,6 @@ Choice getChoice(const char* choices[], int size, char* title);
 void displayError(char* message);
 
 void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes);
-void displayPerson(Person personne, int max_attribute_length);
+void displayPerson(Person personne);
 int getMaxAttributeLength(char** attributes, int size);
-char** buildPersonAttributes(char* attributes[], int size);
+char** buildHarmonizedString(char* attributes[], int size);

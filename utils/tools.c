@@ -74,14 +74,60 @@ void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes){
     liste_personnes[(*nb_personnes)-1] = new_personne;
 }
 
-void displayPerson(Person personne, int max_attribute_length){
-    const char* attributes[] = {personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail};
-    const char* personne_attributes[] = {"Nom", "Prénom", "Téléphone", "Mail"};
-    char** attributes_formatted = buildPersonAttributes((char **) personne_attributes, 4);
-    const int size = 4;
+int getMaxValuesLength(){
+    FILE *file;
+    int nb_personnes = 0;
+    Person personne;
+    file = fopen("repertoire.txt", "r");
+
+    if (file == NULL) {
+        displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
+        fopen("repertoire.txt", "w");
+        return 0;
+    }
+
+    Person *personnes = malloc(sizeof(Person));
+
+    while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
+                 personne.numero_telephone, personne.adresse_mail) == 4){
+        addPerson(personnes, personne, &nb_personnes);
+    }
+
+    if(nb_personnes > 0) {
+        c_textcolor(WHITE);
+        printf("\nVoici le répertoire :\n");
+        int max = 0;
+        const int size = 4;
+        for (int i = 0; i < nb_personnes; i++) {
+            char* attributes[] = {personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail};
+            int tmp = getMaxAttributeLength(attributes, size);
+            if (tmp > max)
+                max = tmp;
+        }
+        return max;
+    }
+
+    return 0;
+}
+
+void displayPerson(Person personne) {
+    char* personne_attributes[] = {"Nom", "Prénom", "Téléphone", "Mail"};
+    char* personne_values[] = {personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail};
+
+    const int size = sizeof(personne_attributes) / sizeof(personne_attributes[0]);
+
+    char** attributes_formatted = buildHarmonizedString((char **) personne_attributes, size);
+    char** values_formatted = buildHarmonizedString((char **) personne_values, size);
 
     for(int i = 0; i < size; i++)
-        printf(" %s : %s\n", attributes_formatted[i], attributes[i]);
+        printf(" %s : %s\n", attributes_formatted[i], values_formatted[i]);
+
+    for(int i = 0; i < size; i++) {
+        free(attributes_formatted[i]);
+        free(values_formatted[i]);
+    }
+    free(attributes_formatted);
+    free(values_formatted);
 }
 
 int getMaxAttributeLength(char* attributes[], int size) {
@@ -97,19 +143,15 @@ int getMaxAttributeLength(char* attributes[], int size) {
     return max_length;
 }
 
-char** buildPersonAttributes(char* attributes[], int size) {
-    int max_attribute_length = getMaxAttributeLength(attributes, size);
+char** buildHarmonizedString(char* attributes[], int size) {
     char** res = malloc(sizeof(char*) * size);
 
+    int max_lengths = getMaxAttributeLength(attributes, size);
+
     for (int i = 0; i < size; i++) {
-        res[i] = malloc(sizeof(char) * (max_attribute_length + 1));
+        res[i] = malloc(sizeof(char) * (max_lengths + 1));
 
-        int nbspace = max_attribute_length - strlen(attributes[i]);
-
-        for (int j = 0; j < nbspace; j++) {
-            strcat(res[i], " ");
-        }
-        res[i] = realloc(res[i], sizeof(char) * (strlen(res[i]) + 1));
+        snprintf(res[i], max_lengths + 1, "%-*s", max_lengths, attributes[i]);
     }
 
     return res;

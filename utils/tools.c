@@ -74,11 +74,45 @@ void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes){
     liste_personnes[(*nb_personnes)-1] = new_personne;
 }
 
-void displayPerson(Person personne){
-    printf(" Nom       : %s                 \n", personne.nom);
-    printf(" Prénom    : %s                 \n", personne.prenom);
-    printf(" Téléphone : %s                 \n", personne.numero_telephone);
-    printf(" Mail      : %s                 \n", personne.adresse_mail);
+void displayPerson(Person personne, int max_attribute_length){
+    const char* attributes[] = {personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail};
+    const char* personne_attributes[] = {"Nom", "Prénom", "Téléphone", "Mail"};
+    char** attributes_formatted = buildPersonAttributes((char **) personne_attributes, 4);
+    const int size = 4;
+
+    for(int i = 0; i < size; i++)
+        printf(" %s : %s\n", attributes_formatted[i], attributes[i]);
+}
+
+int getMaxAttributeLength(char* attributes[], int size) {
+    int max_length = 0;
+
+    for (int i = 0; i < size; i++) {
+        int length = strlen(attributes[i]);
+        if (length > max_length) {
+            max_length = length;
+        }
+    }
+
+    return max_length;
+}
+
+char** buildPersonAttributes(char* attributes[], int size) {
+    int max_attribute_length = getMaxAttributeLength(attributes, size);
+    char** res = malloc(sizeof(char*) * size);
+
+    for (int i = 0; i < size; i++) {
+        res[i] = malloc(sizeof(char) * (max_attribute_length + 1));
+
+        int nbspace = max_attribute_length - strlen(attributes[i]);
+
+        for (int j = 0; j < nbspace; j++) {
+            strcat(res[i], " ");
+        }
+        res[i] = realloc(res[i], sizeof(char) * (strlen(res[i]) + 1));
+    }
+
+    return res;
 }
 
 void displayError(char* message){

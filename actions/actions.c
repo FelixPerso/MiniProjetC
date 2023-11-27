@@ -6,24 +6,45 @@ void createPerson() {
     FILE *file;
     Person personne;
 
-    file = fopen("repertoire.txt", "a");
+    file = fopen(REPERTOIRE, "a");
 
     if (file == NULL) {
         displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
-        file = fopen("repertoire.txt", "w");
+        FILE *newFile = fopen(REPERTOIRE, "w");
+        fclose(newFile);
+        return;
     }
 
-    printf("Nom :");
-    scanf("%s", personne.nom);
+    for (int i = 0; i < NB_ATTRIBUTS; i++) {
+        char input[MAX_TAILLE];
+        printf("%s :", personne_attributes[i]);
+        fgets(input, sizeof(input) + 1, stdin);
+        input[strcspn(input, "\n")] = '\0';
 
-    printf("Prénom :");
-    scanf("%s", personne.prenom);
+        if (strlen(input) >= MAX_TAILLE) {
+            c_textcolor(RED);
+            printf("\nLe %s de la personne ne doit pas dépasser %d caractères.\n\n", personne_attributes[i], MAX_TAILLE);
+            c_textcolor(LIGHTGRAY);
+            fclose(file);
+            return;
+        }
 
-    printf("Numéro de telephone :");
-    scanf("%s", personne.numero_telephone);
+        switch (i) {
+            case 0:
+                strncpy(personne.nom, input, MAX_TAILLE);
+                break;
+            case 1:
+                strncpy(personne.prenom, input, MAX_TAILLE);
+                break;
+            case 2:
+                strncpy(personne.numero_telephone, input, MAX_TAILLE);
+                break;
+            case 3:
+                strncpy(personne.adresse_mail, input, MAX_TAILLE);
+                break;
+        }
 
-    printf("Adresse mail :");
-    scanf("%s", personne.adresse_mail);
+    }
 
     fprintf(file, "%s;%s;%s;%s\n", personne.nom, personne.prenom, personne.numero_telephone,
             personne.adresse_mail);
@@ -37,39 +58,31 @@ void displayAll(){
     FILE *file;
     int nb_personnes = 0;
     Person personne;
-    file = fopen("repertoire.txt", "r");
+    file = fopen(REPERTOIRE, "r");
 
     if (file == NULL) {
         displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
-        fopen("repertoire.txt", "w");
+        FILE *newFile = fopen(REPERTOIRE, "w");
+        fclose(newFile);
         return;
     }
 
     Person *personnes = malloc(sizeof(Person));
 
     while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
-                 personne.numero_telephone, personne.adresse_mail) == 4){
+                 personne.numero_telephone, personne.adresse_mail) == NB_ATTRIBUTS){
         addPerson(personnes, personne, &nb_personnes);
     }
 
     if(nb_personnes > 0) {
         c_textcolor(WHITE);
         printf("\nVoici le répertoire :\n");
-
-        for (int i = 0; i < nb_personnes; i++) {
-            if(i%2 == 0)
-                c_textbackground(LIGHTGRAY);
-            else
-                c_textbackground(DARKGRAY);
-            c_textcolor(BLACK);
-            displayPerson(personnes[i]);
-            c_textbackground(BLACK);
-        }
-        c_textcolor(LIGHTGRAY);
+        displayPersons(personnes, nb_personnes);
     }else
-        displayError("Aucune personne n'a été trouvé :/\n");
+        displayError("Il n'y a aucune personne enregistrée dans le répertoire :/\n");
 
     fclose(file);
+    free(personnes);
 }
 
 void research(){
@@ -80,11 +93,12 @@ void research(){
     char champs_recherche[MAX_TAILLE];
     Choice choix_recherche;
 
-    file = fopen("repertoire.txt", "r");
+    file = fopen(REPERTOIRE, "r");
 
     if (file == NULL) {
         displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
-        fopen("repertoire.txt", "w");
+        FILE *newFile = fopen(REPERTOIRE, "w");
+        fclose(newFile);
         return;
     }
 
@@ -105,7 +119,7 @@ void research(){
     Person* personnes = malloc(sizeof(Person));
 
     while (fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
-                  personne.numero_telephone, personne.adresse_mail) == 4) {
+                  personne.numero_telephone, personne.adresse_mail) == NB_ATTRIBUTS) {
         personneTrouve = false;
 
         switch (choix_recherche) {
@@ -140,16 +154,7 @@ void research(){
         c_textcolor(WHITE);
         printf(nb_personnes>1?"%d Personnes trouvées :\n\n":"Une personne trouvée :\n\n", nb_personnes);
 
-        for (int i = 0; i < nb_personnes; i++) {
-            if(i%2 == 0)
-                c_textbackground(LIGHTGRAY);
-            else
-                c_textbackground(DARKGRAY);
-            c_textcolor(BLACK);
-            displayPerson(personnes[i]);
-            c_textbackground(BLACK);
-        }
-        c_textcolor(LIGHTGRAY);
+        displayPersons(personnes, nb_personnes);
 
     } else {
         char message[1000];
@@ -159,6 +164,7 @@ void research(){
     }
 
     fclose(file);
+    free(personnes);
 }
 
 void delete(){
@@ -167,11 +173,12 @@ void delete(){
     char champs_recherche[MAX_TAILLE];
     int cpt = 0;
 
-    file = fopen("repertoire.txt", "r");
+    file = fopen(REPERTOIRE, "r");
 
     if (file == NULL) {
         displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
-        fopen("repertoire.txt", "w");
+        FILE *newFile = fopen(REPERTOIRE, "w");
+        fclose(newFile);
         return;
     }
 
@@ -184,7 +191,7 @@ void delete(){
 
     tmpFile = fopen("temp.txt", "w");
 
-    Choice choix_recherche = getChoice(personne_attributes, 4, "Entrez le champs de la personne à supprimer :\n");
+    Choice choix_recherche = getChoice(personne_attributes, NB_ATTRIBUTS, "Entrez le champs de la personne à supprimer :\n");
 
     do {
         printf("Entrez le %s recherché (%d char max) : ", personne_attributes[choix_recherche-1], MAX_TAILLE);
@@ -199,7 +206,7 @@ void delete(){
     champs_recherche[strlen(champs_recherche)-1] = '\0';
 
     while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
-                 personne.numero_telephone, personne.adresse_mail) == 4) {
+                 personne.numero_telephone, personne.adresse_mail) == NB_ATTRIBUTS) {
         switch (choix_recherche) {
             case 1:
                 if (strcmp(personne.nom, champs_recherche) != 0) {
@@ -240,7 +247,7 @@ void delete(){
     fclose(file);
     fclose(tmpFile);
 
-    remove("repertoire.txt");
-    rename("temp.txt", "repertoire.txt");
+    remove(REPERTOIRE);
+    rename("temp.txt", REPERTOIRE);
 
 }

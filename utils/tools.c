@@ -74,87 +74,116 @@ void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes){
     liste_personnes[(*nb_personnes)-1] = new_personne;
 }
 
-int getMaxValuesLength(){
-    FILE *file;
-    int nb_personnes = 0;
-    Person personne;
-    file = fopen("repertoire.txt", "r");
+void displayPersons(Person* liste_personnes, int nb_personnes){
+    int max_values_length = 0;
 
-    if (file == NULL) {
-        displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
-        fopen("repertoire.txt", "w");
-        return 0;
+    for (int i = 0; i < nb_personnes; i++){
+        char* personne_values[] = {liste_personnes[i].nom, liste_personnes[i].prenom,
+                                   liste_personnes[i].numero_telephone, liste_personnes[i].adresse_mail};
+
+        int tmp = getMaxAttributeLength(personne_values);
+
+        if (tmp > max_values_length)
+            max_values_length = tmp;
     }
 
-    Person *personnes = malloc(sizeof(Person));
-
-    while(fscanf(file, "%[^;];%[^;];%[^;];%[^\n]\n", personne.nom, personne.prenom,
-                 personne.numero_telephone, personne.adresse_mail) == 4){
-        addPerson(personnes, personne, &nb_personnes);
+    for (int i = 0; i < nb_personnes; i++) {
+        if(i%2 == 0)
+            c_textbackground(LIGHTGRAY);
+        else
+            c_textbackground(DARKGRAY);
+        c_textcolor(BLACK);
+        displayPerson(liste_personnes[i], max_values_length);
+        c_textbackground(BLACK);
     }
-
-    if(nb_personnes > 0) {
-        c_textcolor(WHITE);
-        printf("\nVoici le répertoire :\n");
-        int max = 0;
-        const int size = 4;
-        for (int i = 0; i < nb_personnes; i++) {
-            char* attributes[] = {personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail};
-            int tmp = getMaxAttributeLength(attributes, size);
-            if (tmp > max)
-                max = tmp;
-        }
-        return max;
-    }
-
-    return 0;
+    c_textcolor(LIGHTGRAY);
 }
 
-void displayPerson(Person personne) {
+
+void displayPerson(Person personne, int max_values_length) {
     char* personne_attributes[] = {"Nom", "Prénom", "Téléphone", "Mail"};
     char* personne_values[] = {personne.nom, personne.prenom, personne.numero_telephone, personne.adresse_mail};
 
-    const int size = sizeof(personne_attributes) / sizeof(personne_attributes[0]);
+    int max_attributes_length = getMaxAttributeLength(personne_attributes);
 
-    char** attributes_formatted = buildHarmonizedString((char **) personne_attributes, size);
-    char** values_formatted = buildHarmonizedString((char **) personne_values, size);
+    char** attributes_formatted = buildHarmonizedString(personne_attributes, max_attributes_length);
+    char** values_formatted = buildHarmonizedString(personne_values, max_values_length);
 
-    for(int i = 0; i < size; i++)
-        printf(" %s : %s\n", attributes_formatted[i], values_formatted[i]);
-
-    for(int i = 0; i < size; i++) {
-        free(attributes_formatted[i]);
-        free(values_formatted[i]);
+    for (int i = 0; i< NB_ATTRIBUTS; i++){
+        printf("%s:%s\n", attributes_formatted[i], values_formatted[i]);
     }
-    free(attributes_formatted);
-    free(values_formatted);
+
+    freeHarmonizedString(attributes_formatted);
+    freeHarmonizedString(values_formatted);
+
 }
 
-int getMaxAttributeLength(char* attributes[], int size) {
+int getAdjustedLength(char* str) {
+    int length = 0;
+    for (size_t i = 0; i < strlen(str);) {
+        unsigned char first_byte = (unsigned char)str[i];
+
+        if ((first_byte & 0x80) == 0) {
+            // Caractère ASCII simple
+            i += 1;
+        } else if ((first_byte & 0xE0) == 0xC0) {
+            // Caractère sur 2 octets
+            i += 2;
+        } else if ((first_byte & 0xF0) == 0xE0) {
+            // Caractère sur 3 octets
+            i += 3;
+        } else if ((first_byte & 0xF8) == 0xF0) {
+            // Caractère sur 4 octets
+            i += 4;
+        } else {
+            // Caractère invalide
+            displayError("Erreur : caractère(s) invalide(s) rencontré(s)>.\n");
+            exit(EXIT_FAILURE);
+        }
+
+        length++;
+    }
+
+    return length;
+}
+
+int getMaxAttributeLength(char* attributes[]) {
     int max_length = 0;
 
-    for (int i = 0; i < size; i++) {
-        int length = strlen(attributes[i]);
+    for (int i = 0; i < NB_ATTRIBUTS; i++) {
+        int length = getAdjustedLength(attributes[i]);
         if (length > max_length) {
             max_length = length;
         }
     }
 
-    return max_length;
+    return max_length + 1; // for a space before the end of the box
 }
 
-char** buildHarmonizedString(char* attributes[], int size) {
-    char** res = malloc(sizeof(char*) * size);
+char** buildHarmonizedString(char* attributes[], int max_length) {
+    char** res = malloc(sizeof(char*) * NB_ATTRIBUTS);
 
-    int max_lengths = getMaxAttributeLength(attributes, size);
+    for (int i = 0; i < NB_ATTRIBUTS; i++) {
+        res[i] = malloc(sizeof(char) * (max_length + 2));
 
-    for (int i = 0; i < size; i++) {
-        res[i] = malloc(sizeof(char) * (max_lengths + 1));
+        strcpy(res[i], " ");
 
-        snprintf(res[i], max_lengths + 1, "%-*s", max_lengths, attributes[i]);
+        strcat(res[i], attributes[i]);
+
+        for (int j = getAdjustedLength(attributes[i]); j < max_length; j++) {
+            strcat(res[i], " ");
+        }
     }
 
     return res;
+}
+
+
+void freeHarmonizedString(char** harmonizedString) {
+    for (int i = 0; i < NB_ATTRIBUTS; i++) {
+        free(harmonizedString[i]);
+    }
+    free(harmonizedString);
 }
 
 void displayError(char* message){

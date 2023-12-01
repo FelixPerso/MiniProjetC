@@ -138,7 +138,6 @@ int getAdjustedLength(char* str) {
         } else {
             // Caractère invalide
             displayError("Erreur : caractère(s) invalide(s) rencontré(s)>.\n");
-            exit(EXIT_FAILURE);
         }
 
         length++;

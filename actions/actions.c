@@ -15,7 +15,8 @@ void createPerson() {
         return;
     }
 
-    for (int i = 0; i < NB_ATTRIBUTS; i++) {
+    int i = 0;
+    while(i < NB_ATTRIBUTS) {
         char input[MAX_TAILLE];
         printf("%s :", personne_attributes[i]);
         fgets(input, sizeof(input) + 1, stdin);
@@ -43,6 +44,7 @@ void createPerson() {
                 strncpy(personne.adresse_mail, input, MAX_TAILLE);
                 break;
         }
+        i++;
 
     }
 

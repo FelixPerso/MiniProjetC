@@ -5,6 +5,8 @@
 #include "conio.h"
 
 #define MAX_TAILLE 40
+#define NB_ATTRIBUTS 4
+#define REPERTOIRE "repertoire.txt"
 
 typedef enum {
     NOM = 1,
@@ -30,4 +32,9 @@ Choice getChoice(const char* choices[], int size, char* title);
 void displayError(char* message);
 
 void addPerson(Person* liste_personnes, Person new_personne, int* nb_personnes);
-void displayPerson(Person personne);
+void displayPersons(Person* liste_personnes, int nb_personnes);
+void displayPerson(Person personne, int max_values_length);
+int getAdjustedLength(char* str);
+int getMaxAttributeLength(char** attributes);
+char** buildHarmonizedString(char* attributes[], int max_lenght);
+void freeHarmonizedString(char** harmonizedString);

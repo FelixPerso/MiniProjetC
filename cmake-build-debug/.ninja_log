@@ -1,0 +1,6 @@
+# ninja log v5
+13	367	7219307984417312	CMakeFiles/MiniProjetC.dir/utils/tools.c.obj	3cc5e6b6d55a3ef2
+8	369	7219307984437245	CMakeFiles/MiniProjetC.dir/actions/actions.c.obj	7f0496015b63d0cd
+0	3231	7219308013063342	CMakeFiles/MiniProjetC.dir/application/main.c.obj	75f61759aa644a45
+19	3250	7219308013258220	CMakeFiles/MiniProjetC.dir/utils/conio.c.obj	8d8539f660adddae
+3251	3453	7219308015206497	MiniProjetC.exe	62f5df25d00fea13

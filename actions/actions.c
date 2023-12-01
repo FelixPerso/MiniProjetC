@@ -7,23 +7,20 @@ void createPerson() {
     Person personne;
 
     file = fopen(REPERTOIRE, "a");
-    file = fopen("repertoire.txt", "a");
 
     if (file == NULL) {
         displayError("Fichier 'repertoire.txt' non retrouvée :(\nUn nouveau a été créé pour vous!\n\n");
         FILE *newFile = fopen(REPERTOIRE, "w");
         fclose(newFile);
         return;
-        file = fopen("repertoire.txt", "w");
     }
 
-    for (int i = 0; i < NB_ATTRIBUTS; i++) {
+    int i = 0;
+    while(i < NB_ATTRIBUTS) {
         char input[MAX_TAILLE];
         printf("%s :", personne_attributes[i]);
         fgets(input, sizeof(input) + 1, stdin);
         input[strcspn(input, "\n")] = '\0';
-    printf("Nom :");
-    scanf("%s", personne.nom);
 
         if (strlen(input) >= MAX_TAILLE) {
             c_textcolor(RED);
@@ -32,8 +29,6 @@ void createPerson() {
             fclose(file);
             return;
         }
-    printf("Prénom :");
-    scanf("%s", personne.prenom);
 
         switch (i) {
             case 0:
@@ -49,8 +44,7 @@ void createPerson() {
                 strncpy(personne.adresse_mail, input, MAX_TAILLE);
                 break;
         }
-    printf("Numéro de telephone :");
-    scanf("%s", personne.numero_telephone);
+        i++;
 
     }
 

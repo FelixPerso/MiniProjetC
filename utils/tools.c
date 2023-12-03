@@ -186,6 +186,18 @@ void freeHarmonizedString(char** harmonizedString) {
     free(harmonizedString);
 }
 
+int isSeparator(char* message){
+    char separator = ';';
+    int i = 0;
+    while(message[i] != '\0'){
+        if (message[i] == separator)
+            return 1;
+        i++;
+    }
+
+    return 0;
+}
+
 void displayError(char* message){
     c_textcolor(RED);
     printf("\n%s", message);

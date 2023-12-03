@@ -38,3 +38,4 @@ int getAdjustedLength(char* str);
 int getMaxAttributeLength(char** attributes);
 char** buildHarmonizedString(char* attributes[], int max_lenght);
 void freeHarmonizedString(char** harmonizedString);
+int isSeparator(char* message);

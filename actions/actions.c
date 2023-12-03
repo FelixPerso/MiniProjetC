@@ -30,6 +30,12 @@ void createPerson() {
             return;
         }
 
+        if (isSeparator(input) == 1) {
+            displayError("Le caractère ';' ne doit pas être utilisé.\n\n");
+            fclose(file);
+            return;
+        }
+
         switch (i) {
             case 0:
                 strncpy(personne.nom, input, MAX_TAILLE);

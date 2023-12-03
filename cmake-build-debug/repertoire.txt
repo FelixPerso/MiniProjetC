@@ -1,1 +1,3 @@
-habibi;jafe;068273637;felix.jade=love
+Alonso;Cédric;0695858223;cedric.alonso@efrei.net
+Brinet;Félix;0707070707;felix.brinet@efrei.net
+Hatoum;Jade;0669696969;jade.hatoum@efrei.net
